@@ -1,5 +1,0 @@
-{
-  "app_name": "Student SCADA Baseline v3",
-  "historian_db": "data/historian.db",
-  "poll_interval_seconds": 1.0
-}
