@@ -1,0 +1,182 @@
+<!-- [MODIFY] -->
+<!-- Minggu 4:
+     - Susun control room sederhana
+     - Tampilkan daftar point, alarm, dan command panel
+     Minggu 5:
+     - Tambahkan area trend sederhana
+     Minggu 6:
+     - Rapikan alur demo
+-->
+     <!--
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Student SCADA Baseline</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Student SCADA Baseline</h1>
+  </header>
+  <main>
+    <section id="control-room">
+      <h2>Control Room</h2>
+      <div id="points"></div>
+    </section>
+    <section id="alarms">
+      <h2>Alarm Console</h2>
+      <div id="alarm-list"></div>
+    </section>
+    <section id="commands">
+      <h2>Command Panel</h2>
+      <button id="open-btn">OPEN</button>
+      <button id="close-btn">CLOSE</button>
+    </section>
+    <section id="soe">
+      <h2>SOE</h2>
+      <div id="soe-list"></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCADA Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    header {
+      background: #1e293b;
+      padding: 15px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 15px;
+      padding: 15px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .title {
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .value {
+      font-size: 28px;
+    }
+
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    .btn-open { background: #e81818; }
+    .btn-close { background: #35d515; }
+
+    .alarm {
+      color: #f87171;
+      font-weight: bold;
+    }
+
+    pre {
+      background: #020617;
+      padding: 10px;
+      border-radius: 6px;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+
+<header>⚡ SCADA Control Room</header>
+
+<div class="container">
+
+  <div class="card">
+    <div class="title">Device Status</div>
+    <div class="value" id="pump">--</div>
+    <div class="value" id="temp">--</div>
+  </div>
+
+  <div class="card">
+    <div class="title">Command Panel</div>
+    <button class="btn-open" onclick="sendCommand('OPEN')">OPEN</button>
+    <button class="btn-close" onclick="sendCommand('CLOSE')">CLOSE</button>
+  </div>
+
+  <div class="card">
+    <div class="title">Alarm</div>
+    <div id="alarm">Normal</div>
+  </div>
+
+  <div class="card">
+    <div class="title">Raw Data</div>
+    <pre id="raw"></pre>
+  </div>
+
+</div>
+
+<script>
+
+async function loadData() {
+  const res = await fetch('/points');
+  const data = await res.json();
+
+  document.getElementById('raw').innerText = JSON.stringify(data, null, 2);
+
+  if (data.pump_status) {
+    document.getElementById('pump').innerText = "Pump: " + (data.pump_status.value ? 'ON' : 'OFF');
+  }
+
+  if (data.temperature) {
+    document.getElementById('temp').innerText = "Temp: " + data.temperature.value + "°C";
+
+    if (data.temperature.value > 80) {
+      document.getElementById('alarm').innerText = "🔥 HIGH TEMP";
+      document.getElementById('alarm').className = "alarm";
+    } else {
+      document.getElementById('alarm').innerText = "Normal";
+      document.getElementById('alarm').className = "";
+    }
+  }
+}
+
+setInterval(loadData, 1000);
+
+async function sendCommand(cmd) {
+  await fetch('/command/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ command: cmd })
+  });
+}
+
+</script>
+
+</body>
+</html>
